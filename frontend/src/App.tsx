@@ -4,6 +4,7 @@ import { WalletPrompt } from "./components/WalletPrompt";
 import { PoolManager } from "./components/PoolManager";
 import { TokenManager } from "./components/TokenManager";
 import { MerchantDashboard } from "./components/MerchantDashboard";
+import { ZKPaymentManager } from "./components/ZKPaymentManager";
 import { Card, CardContent } from "./components/ui/card";
 import { Button } from "./components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
@@ -138,12 +139,17 @@ export default function App() {
             <Tabs defaultValue="pool" className="space-y-4">
               <TabsList className="bg-zinc-900">
                 <TabsTrigger value="pool">Privacy Pool</TabsTrigger>
+                <TabsTrigger value="zkpayment">ZK Payments</TabsTrigger>
                 <TabsTrigger value="merchant">Merchant</TabsTrigger>
                 <TabsTrigger value="tokens">Tokens</TabsTrigger>
               </TabsList>
 
               <TabsContent value="pool" className="space-y-4">
                 <PoolManager />
+              </TabsContent>
+
+              <TabsContent value="zkpayment" className="space-y-4">
+                <ZKPaymentManager />
               </TabsContent>
 
               <TabsContent value="merchant" className="space-y-4">

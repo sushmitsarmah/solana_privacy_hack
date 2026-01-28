@@ -104,9 +104,10 @@ class ShadowPayAPI {
     });
   }
 
-  async preparePayment(receiverCommitment: string, amount: number) {
+  async preparePayment(receiverCommitment: string, amount: number, tokenMint?: string) {
     return this.request<{
       payment_hash: string;
+      transaction: string;
       commitment: string;
       message: string;
     }>(`/payment/prepare`, {
@@ -114,6 +115,53 @@ class ShadowPayAPI {
       body: JSON.stringify({
         receiver_commitment: receiverCommitment,
         amount,
+        token_mint: tokenMint,
+      }),
+    });
+  }
+
+  async settlePayment(
+    x402Version: number,
+    paymentHeader: string,
+    resource: string,
+    requirements: {
+      scheme: string;
+      network: string;
+      maxAmountRequired: string;
+      resource: string;
+      description: string;
+      mimeType: string;
+      payTo: string;
+      maxTimeoutSeconds: number;
+    }
+  ) {
+    return this.request<{
+      success: boolean;
+      tx_sig: string;
+      message: string;
+    }>(`/payment/settle`, {
+      method: 'POST',
+      body: JSON.stringify({
+        x402Version,
+        paymentHeader,
+        resource,
+        paymentRequirements: requirements,
+      }),
+    });
+  }
+
+  async verifyPaymentAccess(accessToken: string) {
+    return this.request<{
+      valid: boolean;
+      commitment?: string;
+      merchant?: string;
+      amount?: number;
+      expires_at?: string;
+      message?: string;
+    }>(`/payment/verify-access`, {
+      method: 'POST',
+      body: JSON.stringify({
+        access_token: accessToken,
       }),
     });
   }
