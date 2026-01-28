@@ -19,11 +19,13 @@
     "@noble/curves": "^2.0.1",
     "@noble/hashes": "^2.0.1",
     "@solana/web3.js": "^1.95.8",
+    "@types/redis": "^4.0.11",
     "bs58": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "eventemitter3": "^5.0.4",
     "express": "^5.2.1",
+    "redis": "^4.6.13",
     "snarkjs": "^0.7.6"
   },
   "devDependencies": {

@@ -9,6 +9,9 @@ A TypeScript Node.js Express server integrating the **Umbra SDK** for privacy-fo
 - **Privacy Mixer**: Anonymous transaction mixing
 - **Account Registration**: Register accounts for anonymity/confidentiality
 - **Stealth Addresses**: One-time addresses for enhanced privacy
+- **SPL Token Support**: Full support for any token mint
+- **Transaction History**: Complete on-chain transaction tracking
+- **Redis Storage**: Persistent transaction storage
 
 ## Technology Stack
 
@@ -18,6 +21,14 @@ A TypeScript Node.js Express server integrating the **Umbra SDK** for privacy-fo
 - **@solana/web3.js**: Solana blockchain interaction
 - **@arcium-hq/client**: Encrypted computation
 - **snarkjs**: Zero-knowledge proof generation
+- **Redis**: High-performance data storage
+
+## Prerequisites
+
+- **Redis**: Required for transaction history storage
+  - Install locally: `brew install redis` (macOS) or download from [redis.io](https://redis.io/download)
+  - Or use Redis Cloud (recommended for production)
+  - Or use Docker: `docker run -d -p 6379:6379 redis`
 
 ## Installation
 
@@ -31,8 +42,48 @@ Copy `.env.example` to `.env` and configure:
 
 ```env
 PORT=3000
+
+# Solana RPC URL (default: devnet for development)
+# For production, use mainnet: https://api.mainnet-beta.solana.com
 SOLANA_RPC_URL=https://api.devnet.solana.com
+
+# Redis Configuration (required for transaction history)
+# Use local Redis: redis://localhost:6379
+# Use Redis Cloud: redis://user:password@host:port
+REDIS_URL=redis://localhost:6379
+
+# Environment
 NODE_ENV=development
+```
+
+**Important**: Ensure Redis is running and accessible before starting the server.
+
+## Redis Setup
+
+### Option 1: Local Redis (Development)
+```bash
+# macOS
+brew install redis
+brew services start redis
+
+# Linux
+sudo apt-get install redis-server
+sudo systemctl start redis
+
+# Verify Redis is running
+redis-cli ping
+# Should return: PONG
+```
+
+### Option 2: Redis Cloud (Production)
+1. Sign up at [Redis Cloud](https://redis.com/cloud)
+2. Create a free database
+3. Copy the connection URL
+4. Set `REDIS_URL=redis://:your-password@your-host:your-port` in `.env`
+
+### Option 3: Docker
+```bash
+docker run -d --name redis-umbra -p 6379:6379 redis:latest
 ```
 
 ## Running the Server
