@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+@layer base {
+  * {
+    @apply border-zinc-800;
+  }
+  body {
+    @apply bg-black text-zinc-50;
+  }
+}
+
 :root {
   --background: #ffffff;
   --foreground: oklch(0.145 0 0);

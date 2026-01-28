@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useWalletConnection } from '@solana/react-hooks';
+import { Wallet, ArrowDown, ArrowUp, RefreshCw } from 'lucide-react';
 import api from '../services/api';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 
 export function PoolManager() {
   const { wallet } = useWalletConnection();
@@ -49,7 +53,6 @@ export function PoolManager() {
       setMessage('Deposit transaction created! ' + response.message);
       setAmount('');
 
-      // Reload balance after deposit
       setTimeout(loadBalance, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Deposit failed');
@@ -74,7 +77,6 @@ export function PoolManager() {
       setMessage('Withdrawal created! Net: ' + netSol.toFixed(4) + ' SOL (Fee: ' + feeSol.toFixed(4) + ' SOL)');
       setAmount('');
 
-      // Reload balance after withdrawal
       setTimeout(loadBalance, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Withdrawal failed');
@@ -85,94 +87,105 @@ export function PoolManager() {
 
   if (!walletAddress) {
     return (
-      <div className="rounded-2xl border border-border-low bg-card p-6">
-        <p className="text-muted">Connect your wallet to manage privacy pool</p>
-      </div>
+      <Card className="border-zinc-800 bg-zinc-950">
+        <CardContent className="flex items-center justify-center py-10">
+          <p className="text-zinc-400">Connect your wallet to manage privacy pool</p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-4 rounded-2xl border border-border-low bg-card p-6 shadow-[0_20px_80px_-50px_rgba(0,0,0,0.35)]">
-      <div className="space-y-1">
-        <h2 className="text-xl font-semibold">Privacy Pool</h2>
-        <p className="text-sm text-muted">
-          Mix your funds with others for maximum anonymity on-chain
-        </p>
-      </div>
-
-      <div className="rounded-lg border border-border-low bg-cream p-4">
-        <div className="flex items-baseline justify-between">
-          <span className="text-sm text-muted">Pool Balance</span>
-          <div className="text-right">
-            {balance !== null ? (
-              <>
-                <div className="text-lg font-semibold">{(balance / 1e9).toFixed(4)} SOL</div>
-                <div className="text-xs text-muted">{balance} lamports</div>
-              </>
-            ) : (
-              <span className="text-sm text-muted">Loading...</span>
-            )}
-          </div>
+    <Card className="border-zinc-800 bg-zinc-950">
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Wallet className="h-5 w-5 text-purple-500" />
+          <CardTitle>Privacy Pool</CardTitle>
         </div>
-        {minDeposit !== null && (
-          <div className="mt-2 text-xs text-muted">
-            Min deposit: {(minDeposit / 1e9).toFixed(4)} SOL
+        <CardDescription>
+          Mix your funds with others for maximum anonymity on-chain
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-zinc-400">Pool Balance</span>
+            <div className="text-right">
+              {balance !== null ? (
+                <>
+                  <div className="text-xl font-bold text-purple-400">{(balance / 1e9).toFixed(4)} SOL</div>
+                  <div className="text-xs text-zinc-500">{balance.toLocaleString()} lamports</div>
+                </>
+              ) : (
+                <span className="text-sm text-zinc-500">Loading...</span>
+              )}
+            </div>
+          </div>
+          {minDeposit !== null && (
+            <div className="mt-3 text-xs text-zinc-500">
+              Minimum deposit: {(minDeposit / 1e9).toFixed(4)} SOL
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-zinc-200">
+              Amount (SOL)
+            </label>
+            <Input
+              type="number"
+              step="0.001"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="0.001"
+              className="font-mono"
+            />
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Button
+              onClick={handleDeposit}
+              disabled={loading || !amount}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              <ArrowDown className="mr-2 h-4 w-4" />
+              {loading ? 'Processing...' : 'Deposit'}
+            </Button>
+            <Button
+              onClick={handleWithdraw}
+              disabled={loading || !amount}
+              variant="outline"
+              className="border-zinc-700"
+            >
+              <ArrowUp className="mr-2 h-4 w-4" />
+              {loading ? 'Processing...' : 'Withdraw'}
+            </Button>
+          </div>
+
+          <Button
+            onClick={loadBalance}
+            disabled={loading}
+            variant="ghost"
+            className="w-full"
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh Balance
+          </Button>
+        </div>
+
+        {message && (
+          <div className="rounded-lg border border-green-500/20 bg-green-500/10 p-3 text-sm text-green-400">
+            {message}
           </div>
         )}
-      </div>
 
-      <div className="space-y-3">
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Amount (SOL)
-          </label>
-          <input
-            type="number"
-            step="0.001"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.001"
-            className="w-full rounded-lg border border-border-low bg-card px-4 py-2 font-mono text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-          />
-        </div>
-
-        <div className="grid gap-2 sm:grid-cols-2">
-          <button
-            onClick={handleDeposit}
-            disabled={loading || !amount}
-            className="rounded-lg border border-border-low bg-primary px-4 py-2 font-medium transition hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? 'Processing...' : 'Deposit'}
-          </button>
-          <button
-            onClick={handleWithdraw}
-            disabled={loading || !amount}
-            className="rounded-lg border border-border-low bg-card px-4 py-2 font-medium transition hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? 'Processing...' : 'Withdraw'}
-          </button>
-        </div>
-
-        <button
-          onClick={loadBalance}
-          disabled={loading}
-          className="w-full rounded-lg border border-border-low bg-card px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          Refresh Balance
-        </button>
-      </div>
-
-      {message && (
-        <div className="rounded-lg border border-green-500/20 bg-green-500/10 p-3 text-sm text-green-600">
-          {message}
-        </div>
-      )}
-
-      {error && (
-        <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
-    </div>
+        {error && (
+          <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400">
+            {error}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
