@@ -1,6 +1,6 @@
 import { useWalletConnection } from "@solana/react-hooks";
 import { Shield, Wallet as WalletIcon, LogOut } from 'lucide-react';
-import { PhantomPrompt } from "./components/PhantomPrompt";
+import { WalletPrompt } from "./components/WalletPrompt";
 import { PoolManager } from "./components/PoolManager";
 import { TokenManager } from "./components/TokenManager";
 import { MerchantDashboard } from "./components/MerchantDashboard";
@@ -14,12 +14,22 @@ export default function App() {
 
   const address = wallet?.account.address.toString();
 
-  // Check if Phantom is available
-  const hasPhantom = connectors.some(c => c.name.toLowerCase().includes('phantom'));
+  // Check if any supported wallet is available
+  const supportedWallets = ['phantom', 'umbra'];
+  const availableWallets = connectors.filter(c =>
+    supportedWallets.some(w => c.name.toLowerCase().includes(w))
+  );
+  const hasWallet = availableWallets.length > 0;
 
-  // Show install prompt if no Phantom
-  if (!hasPhantom) {
-    return <PhantomPrompt />;
+  // Determine which wallet is connected based on connector name
+  const connectorName = wallet?.connector?.name?.toLowerCase() || '';
+  const isPhantomConnected = connectorName.includes('phantom');
+  const isUmbraConnected = connectorName.includes('umbra');
+  const connectedWalletIcon = isPhantomConnected ? '👻' : isUmbraConnected ? '🌑' : null;
+
+  // Show install prompt if no supported wallet
+  if (!hasWallet) {
+    return <WalletPrompt />;
   }
 
   return (
@@ -40,7 +50,10 @@ export default function App() {
 
             {status === "connected" && address ? (
               <div className="flex items-center gap-3">
-                <div className="hidden rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2 sm:block">
+                <div className="hidden rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2 sm:flex sm:items-center sm:gap-2">
+                  {connectedWalletIcon && (
+                    <span className="text-sm">{connectedWalletIcon}</span>
+                  )}
                   <p className="font-mono text-xs text-zinc-400">
                     {address.slice(0, 4)}...{address.slice(-4)}
                   </p>
@@ -57,17 +70,25 @@ export default function App() {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                {connectors.filter(c => c.name.toLowerCase().includes('phantom')).map((connector) => (
-                  <Button
-                    key={connector.id}
-                    onClick={() => connect(connector.id)}
-                    disabled={status === "connecting"}
-                    className="bg-purple-600 hover:bg-purple-700"
-                  >
-                    <WalletIcon className="mr-2 h-4 w-4" />
-                    {status === "connecting" ? "Connecting..." : "Connect Phantom"}
-                  </Button>
-                ))}
+                {availableWallets.map((connector) => {
+                  const isPhantom = connector.name.toLowerCase().includes('phantom');
+                  const isUmbra = connector.name.toLowerCase().includes('umbra');
+                  const walletName = isPhantom ? 'Phantom' : isUmbra ? 'Umbra' : connector.name;
+                  const walletIcon = isPhantom ? '👻' : isUmbra ? '🌑' : '';
+
+                  return (
+                    <Button
+                      key={connector.id}
+                      onClick={() => connect(connector.id)}
+                      disabled={status === "connecting"}
+                      className="bg-purple-600 hover:bg-purple-700"
+                    >
+                      {walletIcon && <span className="mr-2">{walletIcon}</span>}
+                      {!walletIcon && <WalletIcon className="mr-2 h-4 w-4" />}
+                      {status === "connecting" ? "Connecting..." : `Connect ${walletName}`}
+                    </Button>
+                  );
+                })}
               </div>
             )}
           </div>
