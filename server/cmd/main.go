@@ -7,9 +7,16 @@ import (
 
 	"sol_privacy/internal/cli"
 	"sol_privacy/internal/server"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Load .env file
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using system environment variables")
+	}
+
 	// Define flags
 	serverMode := flag.Bool("server", false, "Run as HTTP API server instead of CLI")
 	port := flag.String("port", "8080", "Port to run server on (only used with --server)")

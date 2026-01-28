@@ -381,12 +381,18 @@ func (m Model) renderPaymentView() string {
 
 	help := helpStyle.Render("↑/↓: navigate • enter: select • esc: back")
 
+	var messageBox string
+	if m.message != "" {
+		messageBox = "\n" + infoBoxStyle.Render(m.messageStyle.Render(m.message))
+	}
+
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
 		title,
 		"",
 		headerStyle.Render("Select an operation:"),
 		menuStr,
+		messageBox,
 		"",
 		help,
 	)
@@ -429,12 +435,18 @@ func (m Model) renderPoolView() string {
 
 	help := helpStyle.Render("↑/↓: navigate • enter: select • esc: back")
 
+	var messageBox string
+	if m.message != "" {
+		messageBox = "\n" + infoBoxStyle.Render(m.messageStyle.Render(m.message))
+	}
+
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
 		title,
 		info,
 		headerStyle.Render("Select an operation:"),
 		menuStr,
+		messageBox,
 		"",
 		help,
 	)
@@ -472,12 +484,18 @@ func (m Model) renderTokenView() string {
 
 	help := helpStyle.Render("↑/↓: navigate • enter: select • esc: back")
 
+	var messageBox string
+	if m.message != "" {
+		messageBox = "\n" + infoBoxStyle.Render(m.messageStyle.Render(m.message))
+	}
+
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
 		title,
 		"",
 		headerStyle.Render("Manage SPL tokens:"),
 		menuStr,
+		messageBox,
 		"",
 		help,
 	)
@@ -519,12 +537,18 @@ func (m Model) renderAuthorizationView() string {
 
 	help := helpStyle.Render("↑/↓: navigate • enter: select • esc: back")
 
+	var messageBox string
+	if m.message != "" {
+		messageBox = "\n" + infoBoxStyle.Render(m.messageStyle.Render(m.message))
+	}
+
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
 		title,
 		info,
 		headerStyle.Render("Manage bot permissions:"),
 		menuStr,
+		messageBox,
 		"",
 		help,
 	)
@@ -562,12 +586,18 @@ func (m Model) renderMerchantView() string {
 
 	help := helpStyle.Render("↑/↓: navigate • enter: select • esc: back")
 
+	var messageBox string
+	if m.message != "" {
+		messageBox = "\n" + infoBoxStyle.Render(m.messageStyle.Render(m.message))
+	}
+
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
 		title,
 		"",
 		headerStyle.Render("Merchant operations:"),
 		menuStr,
+		messageBox,
 		"",
 		help,
 	)
@@ -607,12 +637,18 @@ func (m Model) renderWebhookView() string {
 
 	help := helpStyle.Render("↑/↓: navigate • enter: select • esc: back")
 
+	var messageBox string
+	if m.message != "" {
+		messageBox = "\n" + infoBoxStyle.Render(m.messageStyle.Render(m.message))
+	}
+
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
 		title,
 		"",
 		headerStyle.Render("Webhook operations:"),
 		menuStr,
+		messageBox,
 		"",
 		help,
 	)
@@ -656,12 +692,18 @@ func (m Model) renderShadowIDView() string {
 
 	help := helpStyle.Render("↑/↓: navigate • enter: select • esc: back")
 
+	var messageBox string
+	if m.message != "" {
+		messageBox = "\n" + infoBoxStyle.Render(m.messageStyle.Render(m.message))
+	}
+
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
 		title,
 		info,
 		headerStyle.Render("ShadowID operations:"),
 		menuStr,
+		messageBox,
 		"",
 		help,
 	)

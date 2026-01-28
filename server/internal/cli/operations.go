@@ -30,6 +30,16 @@ type loadingMsg struct {
 	message string
 }
 
+// Helper function to wrap operations with loading indicator
+func withLoading(loadingMessage string, operation func() tea.Msg) tea.Cmd {
+	return tea.Batch(
+		func() tea.Msg {
+			return loadingMsg{message: loadingMessage}
+		},
+		operation,
+	)
+}
+
 // Handle payment menu selections
 func (m *Model) handlePaymentSelection() tea.Cmd {
 	switch m.cursor {
@@ -267,7 +277,7 @@ func (m *Model) showPoolBalanceForm() tea.Cmd {
 }
 
 func (m *Model) performPoolBalance(wallet string) tea.Cmd {
-	return func() tea.Msg {
+	return withLoading("Checking balance...", func() tea.Msg {
 		ctx := context.Background()
 		balance, err := m.client.Pool.GetBalance(ctx, wallet)
 		if err != nil {
@@ -280,7 +290,7 @@ func (m *Model) performPoolBalance(wallet string) tea.Cmd {
 			message: fmt.Sprintf("Pool Balance: %.4f SOL (%d lamports)\nMin Deposit: %.4f SOL",
 				solBalance, balance.Balance, minDeposit),
 		}
-	}
+	})
 }
 
 func (m *Model) showPoolDepositForm() tea.Cmd {
@@ -361,7 +371,7 @@ func (m *Model) performPoolWithdraw(wallet, amountStr string) tea.Cmd {
 }
 
 func (m *Model) performGetDepositAddress() tea.Cmd {
-	return func() tea.Msg {
+	return withLoading("Getting deposit address...", func() tea.Msg {
 		ctx := context.Background()
 		resp, err := m.client.Pool.GetDepositAddress(ctx)
 		if err != nil {
@@ -371,7 +381,7 @@ func (m *Model) performGetDepositAddress() tea.Cmd {
 		return operationSuccessMsg{
 			message: fmt.Sprintf("Pool Deposit Address:\n%s\nNetwork: %s", resp.DepositAddress, resp.Network),
 		}
-	}
+	})
 }
 
 // Token operations
@@ -393,7 +403,7 @@ func (m *Model) handleTokenSelection() tea.Cmd {
 }
 
 func (m *Model) performListTokens() tea.Cmd {
-	return func() tea.Msg {
+	return withLoading("Loading tokens...", func() tea.Msg {
 		ctx := context.Background()
 		resp, err := m.client.Token.ListSupported(ctx)
 		if err != nil {
@@ -417,7 +427,7 @@ func (m *Model) performListTokens() tea.Cmd {
 		return operationSuccessMsg{
 			message: fmt.Sprintf("Supported Tokens:%s", tokenList),
 		}
-	}
+	})
 }
 
 func (m *Model) showAddTokenForm() tea.Cmd {
@@ -555,7 +565,7 @@ func (m *Model) handleMerchantSelection() tea.Cmd {
 }
 
 func (m *Model) performViewEarnings() tea.Cmd {
-	return func() tea.Msg {
+	return withLoading("Loading earnings...", func() tea.Msg {
 		ctx := context.Background()
 		resp, err := m.client.Merchant.GetEarnings(ctx)
 		if err != nil {
@@ -576,7 +586,7 @@ func (m *Model) performViewEarnings() tea.Cmd {
 			message: fmt.Sprintf("Merchant Earnings:\nTotal: %.4f SOL ($%s)\nWithdrawable: %.4f SOL\nPending: %.4f SOL\n\nToken Breakdown:%s",
 				totalSol, resp.TotalUsdValue, withdrawableSol, pendingSol, tokenBreakdown),
 		}
-	}
+	})
 }
 
 func (m *Model) showGetAnalyticsForm() tea.Cmd {
@@ -769,7 +779,7 @@ func (m *Model) performRegisterWebhook(url, eventsStr, secret string) tea.Cmd {
 }
 
 func (m *Model) performGetWebhookConfig() tea.Cmd {
-	return func() tea.Msg {
+	return withLoading("Loading webhook config...", func() tea.Msg {
 		ctx := context.Background()
 		resp, err := m.client.Webhook.GetConfig(ctx)
 		if err != nil {
@@ -785,7 +795,7 @@ func (m *Model) performGetWebhookConfig() tea.Cmd {
 			message: fmt.Sprintf("Webhook Configuration:\nWebhook ID: %s\nURL: %s\nEvents: %v\nStatus: %s\nCreated: %s\nUpdated: %s",
 				resp.WebhookID, resp.URL, resp.Events, activeStatus, resp.CreatedAt, resp.UpdatedAt),
 		}
-	}
+	})
 }
 
 func (m *Model) showTestWebhookForm() tea.Cmd {
@@ -887,7 +897,7 @@ func (m *Model) performViewLogs(webhookID, limitStr string) tea.Cmd {
 }
 
 func (m *Model) performGetWebhookStats() tea.Cmd {
-	return func() tea.Msg {
+	return withLoading("Loading webhook stats...", func() tea.Msg {
 		ctx := context.Background()
 		resp, err := m.client.Webhook.GetStats(ctx)
 		if err != nil {
@@ -899,7 +909,7 @@ func (m *Model) performGetWebhookStats() tea.Cmd {
 				resp.TotalDeliveries, resp.SuccessfulDeliveries, resp.FailedDeliveries,
 				resp.SuccessRate, resp.AverageResponseTime, resp.LastDelivery, resp.LastSuccess, resp.LastFailure),
 		}
-	}
+	})
 }
 
 func (m *Model) showDeactivateWebhookForm() tea.Cmd {

@@ -9,6 +9,7 @@ import (
 type inputForm struct {
 	title       string
 	inputs      []textinput.Model
+	labels      []string
 	focusIndex  int
 	submitFunc  func([]string) tea.Cmd
 	cancelFunc  func() tea.Cmd
@@ -33,6 +34,7 @@ func newInputForm(title string, fields []string, submitFunc func([]string) tea.C
 	return inputForm{
 		title:      title,
 		inputs:     inputs,
+		labels:     fields,
 		focusIndex: 0,
 		submitFunc: submitFunc,
 	}
@@ -100,8 +102,15 @@ func (f *inputForm) updateInputs(msg tea.Msg) tea.Cmd {
 func (f inputForm) View(width, height int) string {
 	title := titleStyle.Render(f.title)
 
+	labelStyle := lipgloss.NewStyle().
+		Foreground(secondaryColor).
+		Bold(true).
+		MarginBottom(0)
+
 	var inputsView string
 	for i, input := range f.inputs {
+		// Add label above input
+		inputsView += labelStyle.Render(f.labels[i]) + "\n"
 		inputsView += input.View() + "\n"
 		if i < len(f.inputs)-1 {
 			inputsView += "\n"
