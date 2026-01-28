@@ -104,18 +104,25 @@ class ShadowPayAPI {
     });
   }
 
-  async preparePayment(receiverCommitment: string, amount: number, tokenMint?: string) {
+  async preparePayment(receiverCommitment: string, amount: number, tokenMint?: string, generateStealth?: boolean, recipientPublicKey?: string) {
     return this.request<{
       payment_hash: string;
       transaction: string;
       commitment: string;
       message: string;
+      stealth_address?: {
+        ephemeral_public_key: string;
+        ephemeral_private_key: string;
+        recipient_public_key: string;
+      };
     }>(`/payment/prepare`, {
       method: 'POST',
       body: JSON.stringify({
         receiver_commitment: receiverCommitment,
         amount,
         token_mint: tokenMint,
+        generate_stealth: generateStealth,
+        recipient_public_key: recipientPublicKey,
       }),
     });
   }
@@ -277,6 +284,83 @@ class ShadowPayAPI {
         created_at: number;
       }>;
     }>(`/authorization/list/${wallet}`);
+  }
+
+  // Umbra Integration (only available when Umbra is configured)
+  async generateStealthAddress(recipientPublicKey: string) {
+    return this.request<{
+      success: boolean;
+      data: {
+        ephemeral_public_key: string;
+        ephemeral_private_key: string;
+        recipient_public_key: string;
+      };
+      message: string;
+    }>(`/umbra/stealth-address`, {
+      method: 'POST',
+      body: JSON.stringify({
+        recipient_public_key: recipientPublicKey,
+      }),
+    });
+  }
+
+  async depositToUmbra(privateKey: string, amount: number, destinationAddress?: string) {
+    return this.request<{
+      success: boolean;
+      data: {
+        signature: string;
+        amount: number;
+        amount_lamports: number;
+        destination_address: string;
+        public_key: string;
+        explorer_url: string;
+      };
+      message: string;
+    }>(`/umbra/deposit`, {
+      method: 'POST',
+      body: JSON.stringify({
+        private_key: privateKey,
+        amount,
+        destination_address: destinationAddress,
+      }),
+    });
+  }
+
+  async prepareStealthPayment(
+    recipientPublicKey: string,
+    amount: number,
+    privateKey: string,
+    tokenMint?: string
+  ) {
+    return this.request<{
+      success: boolean;
+      stealth_address: {
+        ephemeral_public_key: string;
+        ephemeral_private_key: string;
+        recipient_public_key: string;
+      };
+      deposit: {
+        signature: string;
+        amount: number;
+        destination_address: string;
+        explorer_url: string;
+      };
+      payment: {
+        payment_hash: string;
+        commitment: string;
+        message: string;
+        transaction: string;
+      };
+      message: string;
+    }>(`/umbra/prepare-stealth-payment`, {
+      method: 'POST',
+      body: JSON.stringify({
+        recipient_public_key: recipientPublicKey,
+        amount,
+        private_key: privateKey,
+        token_mint: tokenMint,
+      }),
+    });
   }
 }
 

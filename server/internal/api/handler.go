@@ -3,22 +3,36 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 
 	shadowpay "sol_privacy"
+	"sol_privacy/internal/umbra"
 
 	"github.com/go-chi/chi/v5"
 )
 
 // Handler holds the ShadowPay client and provides HTTP endpoints
 type Handler struct {
-	client *shadowpay.ShadowPay
+	client      *shadowpay.ShadowPay
+	umbraClient *umbra.Client
+	umbraEnabled bool
 }
 
 // NewHandler creates a new API handler
 func NewHandler(apiKey string) *Handler {
-	return &Handler{
+	h := &Handler{
 		client: shadowpay.New(apiKey),
 	}
+
+	// Initialize Umbra client if URL is configured
+	if umbraURL := os.Getenv("UMBRA_API_URL"); umbraURL != "" {
+		h.umbraClient = umbra.NewClient(umbra.Config{
+			BaseURL: umbraURL,
+		})
+		h.umbraEnabled = true
+	}
+
+	return h
 }
 
 // Routes returns all API routes
@@ -88,6 +102,18 @@ func (h *Handler) Routes() chi.Router {
 		r.Get("/list/{wallet}", h.AuthorizationList)
 		r.Post("/revoke", h.AuthorizationRevoke)
 	})
+
+	// Umbra integration routes (only if Umbra is enabled)
+	if h.umbraEnabled {
+		r.Route("/umbra", func(r chi.Router) {
+			r.Post("/stealth-address", h.UmbraStealthAddress)
+			r.Post("/deposit", h.UmbraDeposit)
+			r.Post("/send", h.UmbraSend)
+			r.Post("/withdraw", h.UmbraWithdraw)
+			r.Post("/balance", h.UmbraBalance)
+			r.Post("/prepare-stealth-payment", h.UmbraPrepareStealthPayment)
+		})
+	}
 
 	return r
 }

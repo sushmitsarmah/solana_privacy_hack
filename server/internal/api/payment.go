@@ -42,20 +42,62 @@ func (h *Handler) PaymentWithdraw(w http.ResponseWriter, r *http.Request) {
 }
 
 // PaymentPrepare handles ZK payment preparation
+// Enhanced to optionally generate stealth addresses via Umbra
 func (h *Handler) PaymentPrepare(w http.ResponseWriter, r *http.Request) {
-	var req payment.PrepareRequest
+	var req struct {
+		ReceiverCommitment string `json:"receiver_commitment"`
+		Amount             int64  `json:"amount"`
+		TokenMint          string `json:"token_mint,omitempty"`
+		GenerateStealth    bool   `json:"generate_stealth,omitempty"`
+		RecipientPublicKey string `json:"recipient_public_key,omitempty"`
+	}
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
-	resp, err := h.client.Payment.Prepare(r.Context(), req)
+	receiverCommitment := req.ReceiverCommitment
+
+	// If stealth address generation is requested and Umbra is enabled
+	if req.GenerateStealth && h.umbraEnabled && req.RecipientPublicKey != "" {
+		stealthResp, err := h.umbraClient.GenerateStealthAddress(r.Context(), req.RecipientPublicKey)
+		if err != nil {
+			respondError(w, http.StatusInternalServerError, "Failed to generate stealth address: "+err.Error())
+			return
+		}
+		receiverCommitment = stealthResp.Data.EphemeralPublicKey
+	}
+
+	// Prepare payment with ShadowPay
+	prepareResp, err := h.client.Payment.Prepare(r.Context(), payment.PrepareRequest{
+		ReceiverCommitment: receiverCommitment,
+		Amount:             req.Amount,
+		TokenMint:          req.TokenMint,
+	})
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	respondJSON(w, http.StatusOK, resp)
+	// If stealth was generated, include it in the response
+	if req.GenerateStealth && h.umbraEnabled && req.RecipientPublicKey != "" {
+		stealthResp, _ := h.umbraClient.GenerateStealthAddress(r.Context(), req.RecipientPublicKey)
+		respondJSON(w, http.StatusOK, map[string]interface{}{
+			"payment_hash": prepareResp.PaymentHash,
+			"commitment":   prepareResp.Commitment,
+			"message":      prepareResp.Message,
+			"transaction":  prepareResp.Transaction,
+			"stealth_address": map[string]string{
+				"ephemeral_public_key":  stealthResp.Data.EphemeralPublicKey,
+				"ephemeral_private_key": stealthResp.Data.EphemeralPrivateKey,
+				"recipient_public_key":  stealthResp.Data.RecipientPublicKey,
+			},
+		})
+		return
+	}
+
+	respondJSON(w, http.StatusOK, prepareResp)
 }
 
 // PaymentAuthorize handles payment authorization
