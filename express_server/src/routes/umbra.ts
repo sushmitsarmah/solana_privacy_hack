@@ -949,7 +949,7 @@ router.post('/deposit-spl', async (req: Request, res: Response) => {
       });
     }
 
-    const { client, keypair } = await setupUmbraClient(privateKey, rpcUrl);
+    const { client, keypair } = await setupUmbraClient(privateKey);
 
     // Use sender address as destination if not provided
     const destination = destinationAddress || keypair.publicKey.toBase58();
@@ -1032,18 +1032,13 @@ router.get('/transactions', async (req: Request, res: Response) => {
     const offsetNum = parseInt(offset as string) || 0;
 
     // Get transaction history
-    let history = getTransactionHistory(publicKey as string, limitNum, offsetNum);
-
-    // Filter by type if specified
-    if (type) {
-      history = history.filter(tx => tx.type === type);
-    }
+    let history: TransactionRecord[] = await getTransactionHistory(publicKey as string, limitNum, offsetNum, type as string);
 
     res.json({
       success: true,
       data: {
         transactions: history,
-        total: transactionHistory.filter(tx => tx.publicKey === publicKey).length,
+        total: history.length,
         limit: limitNum,
         offset: offsetNum,
       },
