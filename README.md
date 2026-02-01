@@ -5,7 +5,7 @@ Here is a concise, professional `README.md` for your submission.
 
 **The First Server-Side Privacy Automation Layer for Solana**
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/sushmitsarmah/shadowstream.svg)](https://pkg.go.dev/github.com/sushmitsarmah/shadowstream)
+[![Go Reference](https://pkg.go.dev/badge/github.com/sushmitsarmah/shadowstream.png)](https://pkg.go.dev/github.com/sushmitsarmah/shadowstream)
 [![Solana](https://img.shields.io/badge/Solana-Privacy-blueviolet)](https://solana.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
